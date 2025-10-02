@@ -18,7 +18,7 @@ public class Main {
     final static int GENERATIONS = 1000000; // na tomto cisle nezalezi
     final static double CROSSINTERVAL = 0.001;
     final static double CATASTROPHE = 0.0002;
-    final static boolean VISUAL_ENABLED = false;
+    final static boolean VISUAL_ENABLED = true;
     final static boolean CROWDING = true; // deterministic crowding
     static int fitnessCounted;
     final static int fitnessCountCeil = 200 * 50000; // 200 ohodnoceni ~ 1 generace
@@ -68,13 +68,13 @@ public class Main {
         upperLegend = new ArrayList<>();
         leftLegend = new ArrayList<>();
 
-        readInput("25x20.txt");
+        readInput("resources/25x20.txt");
 
         width = upperLegend.size();
         height = leftLegend.size();
 
-        for (int iterace = 0; iterace < ITERATIONS_NR; iterace++) {
-            System.out.println(iterace + ". " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+        for (int iteration = 0; iteration < ITERATIONS_NR; iteration++) {
+            System.out.println(iteration + ". " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
 
             fitnessCounted = 0;
             Island[] islands = new Island[ISLANDS_NR];

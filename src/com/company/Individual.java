@@ -276,7 +276,7 @@ public class Individual implements  Comparable<Individual>{
     Integer changedRow;
     ArrayList<Integer> gapsBackup;
 
-    public Individual localOptimalization(int numberOfOptimalization){
+    public Individual localOptimization(int iterations){
         bestFitnessEver = fitness;
         int tolerance = 6;
         if (bestFitnessEver >= -60 ) tolerance = 4;
@@ -286,7 +286,7 @@ public class Individual implements  Comparable<Individual>{
         Individual best = new Individual(this);
 
         // repeat optimization
-        for (int p = 0; p < numberOfOptimalization; p++) {
+        for (int p = 0; p < iterations; p++) {
             swapGaps();
             if (fitness >= bestFitnessEver - tolerance) {
                 if(fitness >= best.fitness){
@@ -301,10 +301,10 @@ public class Individual implements  Comparable<Individual>{
                     bestFitnessEver = fitness;
                 }
 
-//                if (nejlepsiMezery != null) {
-//                    velikostiMezer.set(ZmenenyRadek, new ArrayList<Integer>(nejlepsiMezery));
-//                    VyplnRadekTajenky(ZmenenyRadek, velikostiMezer.get(ZmenenyRadek));
-//                    fitness = fitnessKandidata;
+//                if (bestGaps != null) {
+//                    gapSizes.set(changedRow, new ArrayList<Integer>(bestGaps));
+//                    fillTableRow(changedRow, gapSizes.get(changedRow));
+//                    fitness = candidatesFitness;
 //                }
 
                 if (fitness == 0) {
@@ -318,8 +318,8 @@ public class Individual implements  Comparable<Individual>{
             }
 
 //            if (p % 1000 == 0) {
-//                System.out.println(p + ". KOLO. fitness: "
-//                        + fitness + " Iteraci bez zlepseni " + iteraciBezZlepseni);
+//                System.out.println(p + ". round. fitness: "
+//                        + fitness + " iterations without improvement " + iterationsWithoutImprovement);
 //            }
         }
         return best;

@@ -72,13 +72,13 @@ public class Island {
         if (g % INTERVALS == 0 && g != 0) {
             for (int i = 0; i < population.size() ; i++) {
                 if(Math.random() < 0.1)
-                    population.set(i, population.get(i).localOptimalization(LOCAL_SEARCH_ITERATIONS));
+                    population.set(i, population.get(i).localOptimization(LOCAL_SEARCH_ITERATIONS));
             }
 
             if (bestIndividual.fitness >= -14) {
-                bestIndividual = bestIndividual.localOptimalization(LOCAL_SEARCH_ITERATIONS * 5);
+                bestIndividual = bestIndividual.localOptimization(LOCAL_SEARCH_ITERATIONS * 5);
             } else {
-                bestIndividual = bestIndividual.localOptimalization(LOCAL_SEARCH_ITERATIONS);
+                bestIndividual = bestIndividual.localOptimization(LOCAL_SEARCH_ITERATIONS);
             }
         }
 
