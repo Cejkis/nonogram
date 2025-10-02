@@ -1,378 +1,152 @@
 package com.company;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Scanner;
 
 public class Main {
+    static ArrayList<ArrayList<Integer>> upperLegend;
+    static ArrayList<ArrayList<Integer>> leftLegend;
 
-    static ArrayList<ArrayList<Integer>> horniLegenda;
+    static int height, width;
+    final static int ITERATIONS_NR = 5;
+    final static int ISLANDS_NR = 5;
+    final static int GENERATIONS = 1000000; // na tomto cisle nezalezi
+    final static double CROSSINTERVAL = 0.001;
+    final static double CATASTROPHE = 0.0002;
+    final static boolean VISUAL_ENABLED = false;
+    final static boolean CROWDING = true; // deterministic crowding
+    static int fitnessCounted;
+    final static int fitnessCountCeil = 200 * 50000; // 200 ohodnoceni ~ 1 generace
 
-    static ArrayList<ArrayList<Integer>> levaLegenda;
-    static ArrayList<ArrayList<Integer>> velikostiMezer;
+    static void readInput(String inputName) {
+        Scanner in = null;
+        Scanner rowScanner;
 
-    static Integer ZmenenyRadek=0;
-    static ArrayList<Integer> lepsiMezery;
-
-    static boolean[][] tajenka;
-
-    static int vyska = 5;
-    static int sirka = 5;
-    static int soucasnyFitness;
-    static int nejnizsifitness;
-    static int fitnessKandidata;
-
-    public static void printPole() {
-
-        for (int i = 0; i < vyska; i++) {
-            printRadek(i, velikostiMezer.get(i));
+        try {
+            in = new Scanner(new FileReader(inputName));
+        } catch (FileNotFoundException ex) {
+            System.out.println("Can't find file " + inputName);
         }
 
-    }
+        String row = in.nextLine(); // to skip first line
 
-    public static void printRadek(int i, ArrayList<Integer> Mezery) {
+        ArrayList<Integer> newRow;
 
-        ArrayList<Integer> policka = levaLegenda.get(i);
-        System.out.print( i + "");
-
-        if(policka.size() +1 != Mezery.size() ){
-
-            System.out.println("*alert policek a mezer" + policka.size() +","+ Mezery.size());
-
-        }
-
-        for (int j = 0; j < Mezery.get(0); j++) {
-            System.out.print(" ");
-        }
-
-        for (int j = 0; j < policka.size(); j++) {
-
-            // vytisknu jedno policko
-            for (int k = 0; k < policka.get(j); k++) {
-                System.out.print("#");
+        while (true) {
+            row = in.nextLine();
+            if (row.startsWith("columns")) {
+                break;
             }
 
-            for (int k = 0; k < Mezery.get(j + 1); k++) {
-                System.out.print(" ");
+            newRow = new ArrayList<>();
+            rowScanner = new Scanner(row);
+
+            while (rowScanner.hasNextInt()) {
+                newRow.add(rowScanner.nextInt());
             }
-
+            leftLegend.add(newRow);
         }
 
-        System.out.print("|");
-        System.out.println();
+        while (in.hasNext()) {
+            row = in.nextLine();
+            newRow = new ArrayList<>();
 
-    }
-
-    public static void initializeVariables() {
-
-        horniLegenda = new ArrayList<>(sirka);
-        levaLegenda = new ArrayList<>(vyska);
-        velikostiMezer = new ArrayList<>(vyska);
-
-        tajenka = new boolean[vyska][sirka];
-
-        for (int i = 0; i < sirka; i++) {
-            horniLegenda.add(new ArrayList<Integer>());
-        }
-
-        for (int i = 0; i < vyska; i++) {
-            levaLegenda.add(new ArrayList<Integer>());
-        }
-
-        for (int i = 0; i < vyska; i++) {
-            velikostiMezer.add(new ArrayList<Integer>());
-        }
-
-        horniLegenda.get(0).add(1);
-        horniLegenda.get(0).add(1);
-        horniLegenda.get(1).add(1);
-        horniLegenda.get(1).add(2);
-        horniLegenda.get(2).add(3);
-        horniLegenda.get(2).add(1);
-        horniLegenda.get(3).add(2);
-        horniLegenda.get(3).add(1);
-        horniLegenda.get(4).add(1);
-        horniLegenda.get(4).add(1);
-
-        levaLegenda.get(0).add(1);
-        levaLegenda.get(0).add(1);
-        levaLegenda.get(1).add(3);
-        levaLegenda.get(2).add(1);
-        levaLegenda.get(2).add(2);
-        levaLegenda.get(3).add(1);
-        levaLegenda.get(3).add(1);
-        levaLegenda.get(4).add(4);
-
-    }
-
-    // Vyplni mezery, mezery 1 a vycentrovana doprostred
-    public static void vytvorMezery() {
-
-        ArrayList<Integer> VelikostiPoli;
-        ArrayList<Integer> Mezery;
-
-        for (int i = 0; i < vyska; i++) { // i je radek
-
-
-            VelikostiPoli = levaLegenda.get(i);
-            Mezery = velikostiMezer.get(i);
-
-            if (VelikostiPoli.isEmpty()) { // nebo 1? Nejspis nikdy nenastane
-                Mezery.add(sirka);
-            } else {
-
-                int velikost = 0;
-
-                for (int j = 0; j < VelikostiPoli.size(); j++) { //j je poradi cisla v radku
-                    velikost += VelikostiPoli.get(j);
-                }
-
-                velikost += VelikostiPoli.size() - 1;
-
-                double zbytek = sirka - velikost;
-
-                Mezery.add((int) Math.ceil(zbytek / 2));
-
-                for (int j = 0; j < VelikostiPoli.size() - 1; j++) {
-                    Mezery.add(1);
-                }
-
-                Mezery.add((int) Math.floor(zbytek / 2));
-
+            rowScanner = new Scanner(row);
+            while (rowScanner.hasNextInt()) {
+                newRow.add(0, rowScanner.nextInt());
             }
-            if(VelikostiPoli.size() +1 != Mezery.size() ){
-
-                System.out.println("ALERT policek a mezer" + VelikostiPoli.size() +","+ Mezery.size());
-
-            }
-        }
-
-    }
-
-    public static void vyplnCelouTajenkuPodleLegendyAMezer() {
-
-        for (int i = 0; i < vyska; i++) { // i je radek
-            VyplnRadekTajenky(i, velikostiMezer.get(i));
-        }
-    }
-
-    public static void VyplnRadekTajenky(int radek, ArrayList<Integer> mezeryVRadku) {
-
-        ArrayList<Integer> polickaVRadku = levaLegenda.get(radek);
-
-        int pointer = 0; // ukazatel na pozici, kterou menim
-
-        for (int j = 0; j < mezeryVRadku.get(0); j++) { // prvni mezera
-            tajenka[radek][pointer] = false;
-            pointer++;
-        }
-
-        for (int j = 0; j < polickaVRadku.size(); j++) { // pro vsehna policka
-
-            for (int k = 0; k < polickaVRadku.get(j); k++) {
-                tajenka[radek][pointer] = true;
-                pointer++;
-            }
-            //   System.out.println("*" + radek + "*" + mezeryVRadku.get(j + 1));
-
-            for (int k = 0; k < mezeryVRadku.get(j + 1); k++) {
-                tajenka[radek][pointer] = false;
-                pointer++;
-            }
-        }
-
-    }
-
-    // podle tajenky a legendy spocte needlemana pro jeden radek/sloupec
-    public static int needlemanWunch(ArrayList<Integer> legenda, ArrayList<Integer> tajenka) {
-
-        ArrayList<Integer> x = new ArrayList<>(legenda);
-        ArrayList<Integer> y = new ArrayList<>(tajenka);
-
-        x.add(0, 0);
-        y.add(0, 0);
-
-        int[][] H = new int[y.size()][x.size()];
-
-        H[0][0] = 0;
-
-        for (int i = 1; i < y.size(); i++) {
-            H[i][0] = H[i - 1][0] - y.get(i);
-        }
-
-        for (int i = 1; i < x.size(); i++) {
-            H[0][i] = H[0][i - 1] - x.get(i);
-        }
-
-        for (int j = 1; j < x.size(); j++) {
-            for (int i = 1; i < y.size(); i++) {
-
-                H[i][j] = Math.max(H[i - 1][j] - y.get(i),
-                        Math.max(H[i][j - 1] - x.get(j),
-                                H[i - 1][j - 1] - Math.abs(x.get(j) - y.get(i))));
-
-            }
-        }
-
-        return H[y.size() - 1][x.size() - 1];
-    }
-
-    // vraci sloupec tajenky ve jako ve "sloucenem" tvaru
-    public static ArrayList<Integer> arraylistFromPole(int sloupec) {
-
-        ArrayList<Integer> a = new ArrayList();
-
-        int kombo = 0;
-
-        for (int i = 0; i < vyska; i++) {
-
-            if (tajenka[i][sloupec]) {
-
-                kombo++;
-            } else {
-                if (kombo != 0) {
-                    a.add(kombo);
-                }
-                kombo = 0;
-            }
-
-        }
-
-        if (kombo != 0) {
-            a.add(kombo);
-        }
-
-        return a;
-    }
-
-    // spocte sumu needlemanu vsech sloupcu
-    public static int spoctiFitness() {
-
-        int suma = 0;
-
-        for (int i = 0; i < horniLegenda.size(); i++) {
-            suma += needlemanWunch(horniLegenda.get(i), arraylistFromPole(i));
-        }
-
-        return suma;
-    }
-
-    // vypise na sout hodnoty needlemana pro kazdy sloupec
-    public static void vypisNeedlemanaProSloupce() {
-
-        for (int i = 0; i < horniLegenda.size(); i++) {
-            System.out.println("needleman " + i + ": " + needlemanWunch(horniLegenda.get(i), arraylistFromPole(i)));
-        }
-
-    }
-
-    public static void prehazimMezery(int radek, ArrayList<Integer> IndexyMezerKtereMuzuUbrat) {
-
-        ArrayList<Integer> noveMezery = velikostiMezer.get(radek);
-
-        for (int i = 0; i < IndexyMezerKtereMuzuUbrat.size(); i++) { // IndexyMezerKtereMuzuUbrat obsahuje indexy mezer, ktere muzu ubrat
-            for (int j = 0; j < noveMezery.size(); j++) { // velikosti mezer
-                if (IndexyMezerKtereMuzuUbrat.get(i) == j) {
-                    continue;
-                }
-
-                int indexZeKterehoUbiram = IndexyMezerKtereMuzuUbrat.get(i);
-
-                noveMezery.set(indexZeKterehoUbiram, noveMezery.get(indexZeKterehoUbiram) - 1);
-                noveMezery.set(j, noveMezery.get(j) + 1);
-
-                // uprav radek v tajence
-                // printRadek(radek, noveMezery);
-                VyplnRadekTajenky(radek, noveMezery);
-
-                // otestuj
-                fitnessKandidata = spoctiFitness();
-
-                if (fitnessKandidata >= nejnizsifitness && fitnessKandidata >= soucasnyFitness) {
-                    nejnizsifitness = fitnessKandidata;
-
-                    ZmenenyRadek = radek;
-                    lepsiMezery = (ArrayList)noveMezery.clone();
-
-                }
-
-                //vrat
-                noveMezery.set(indexZeKterehoUbiram, noveMezery.get(indexZeKterehoUbiram) + 1);
-                noveMezery.set(j, noveMezery.get(j) - 1);
-                VyplnRadekTajenky(radek, noveMezery);
-
-            }
+            upperLegend.add(newRow);
         }
     }
 
     public static void main(String[] args) {
+        upperLegend = new ArrayList<>();
+        leftLegend = new ArrayList<>();
 
-        initializeVariables();
-        vytvorMezery();
+        readInput("25x20.txt");
 
-        vyplnCelouTajenkuPodleLegendyAMezer();
+        width = upperLegend.size();
+        height = leftLegend.size();
 
-        soucasnyFitness = spoctiFitness();
-        System.out.println("soucasny fitness:" + soucasnyFitness);
-        nejnizsifitness = soucasnyFitness;
+        for (int iterace = 0; iterace < ITERATIONS_NR; iterace++) {
+            System.out.println(iterace + ". " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
 
-        ArrayList<Integer> MuzuUbrat = new ArrayList();
-
-        for (int p = 0; p < 30; p++) { // opakovani optimalizace
-            System.out.println("");
-            System.out.println( p+1 + ". KOLO");
-            printPole();
-
-            for (int i = 0; i < vyska; i++) { // radek po radku
-
-                ArrayList<Integer> mezeryVAktualnimRadku = velikostiMezer.get(i);
-
-                if (mezeryVAktualnimRadku.isEmpty()) {
-                    continue;
-                }
-
-                // System.out.println();
-                // System.out.println("radek:" + i);
-
-                MuzuUbrat.clear();
-
-                // muzu vlozit do vsech mezer (???)
-                // prvni mezera
-                if (mezeryVAktualnimRadku.get(0) > 0) {
-                    MuzuUbrat.add(0);
-                }
-
-                // posledni mezera
-                if (mezeryVAktualnimRadku.size() > 1 && mezeryVAktualnimRadku.get(mezeryVAktualnimRadku.size() - 1) > 0) {
-                    MuzuUbrat.add(mezeryVAktualnimRadku.size() - 1);
-                }
-
-                for (int j = 1; j < mezeryVAktualnimRadku.size() - 1; j++) { // uvnitr radku najdu mista na vkladani a vybirani
-
-                    if (mezeryVAktualnimRadku.get(j) > 1) {
-                        MuzuUbrat.add(j);
-                    }
-                }
-
-                prehazimMezery(i, MuzuUbrat);
-
+            fitnessCounted = 0;
+            Island[] islands = new Island[ISLANDS_NR];
+            for (int i = 0; i < ISLANDS_NR; i++) {
+                islands[i] = new Island(i);
             }
 
-            if (nejnizsifitness >= soucasnyFitness) {
-
-                velikostiMezer.set(ZmenenyRadek,lepsiMezery);
-
-                soucasnyFitness = nejnizsifitness;
-
-                System.out.println();
-                System.out.println("zlepsuju moje pole" + nejnizsifitness + " zmena v radku " + ZmenenyRadek);
-                printPole();
-
-                if (soucasnyFitness == 0) {
-                    System.out.println("MAM SPRAVNY NONOGRAM!!!");
+            for (int g = 0; g < GENERATIONS; g++) {
+                if (g % 1000 == 0) {
+                    System.out.println("generation " + g);
+                }
+                if (fitnessCountCeil < fitnessCounted) {
                     break;
                 }
 
+                for (int i = 0; i < ISLANDS_NR; i++) {
+                    generation(islands, g, i);
+                }
+            }
+            double sumBestScore = 0;
+            double sumBestIndividual = 0;
+
+            for (int i = 0; i < ISLANDS_NR; i++) {
+                sumBestScore += islands[i].bestScore;
+                sumBestIndividual += islands[i].bestIndividual.fitness;
+                System.out.println(islands[i].bestScore);
+            }
+            System.out.println("Best Avg: " + sumBestScore / ISLANDS_NR);
+            System.out.println("Current Avg: " + sumBestIndividual / ISLANDS_NR);
+        }
+        System.out.println(fitnessCounted);
+    }
+
+    public static void generation(Island[] Islands, int g, int i) {
+        if (fitnessCountCeil < fitnessCounted) {
+            return;
+        }
+
+        if (CROWDING) {
+            Islands[i].optimiseCrowd(g);
+        } else {
+            Islands[i].optimise(g);
+        }
+
+        // Crossover to other islands
+        if (Math.random() < CROSSINTERVAL && 1 < ISLANDS_NR) {
+            System.out.println("Island tranfer from " + i);
+            for (int j = 0; j < ISLANDS_NR; j++) {
+                if (i == j) continue;
+                Islands[j].population.add(new Individual(Islands[i].bestIndividual));
+                Collections.sort(Islands[j].population);
+            }
+        }
+
+        // Catastrophe - randomly deletes half of the population including the best individual
+        if (Math.random() < CATASTROPHE) {
+            System.out.println("Catastrophe on island " + i);
+
+            if (!CROWDING) {
+                Islands[i].population.remove(0);
+                for (int j = 0; j < Island.populationSize / 2; j++) {
+                    int rem = (int) (Math.random() * Islands[i].population.size());
+                    Islands[i].population.remove(rem);
+                }
             }
 
+            for (int j = 0; j < Islands[i].population.size(); j++) {
+                for (int k = 0; k < 5; k++) {
+                    Islands[i].population.get(j).mutate();
+                }
+                Islands[i].population.get(j).computeAndSetFitness();
+            }
         }
     }
 }

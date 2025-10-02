@@ -1,0 +1,21 @@
+rows
+1 2 2 1 2
+
+columns - the first number in the row means the bottom block, the last number in the row means the top block
+0
+1
+0
+1
+1
+0
+0
+1
+1
+0
+0
+0
+1
+0
+1
+1
+
