@@ -9,19 +9,19 @@ import java.util.Date;
 import java.util.Scanner;
 
 public class Main {
-    static ArrayList<ArrayList<Integer>> upperLegend;
-    static ArrayList<ArrayList<Integer>> leftLegend;
+    static ArrayList<ArrayList<Integer>> upperLegend = new ArrayList<>();
+    static ArrayList<ArrayList<Integer>> leftLegend = new ArrayList<>();
 
     static int height, width;
     final static int ITERATIONS_NR = 5;
     final static int ISLANDS_NR = 5;
-    final static int GENERATIONS = 1000000; // na tomto cisle nezalezi
+    final static int GENERATIONS = 1000000; // doesnt really matter
     final static double CROSSINTERVAL = 0.001;
     final static double CATASTROPHE = 0.0002;
     final static boolean VISUAL_ENABLED = true;
     final static boolean CROWDING = true; // deterministic crowding
     static int fitnessCounted;
-    final static int fitnessCountCeil = 200 * 50000; // 200 ohodnoceni ~ 1 generace
+    final static int fitnessCountCeil = 200 * 50000; // 200 evaluations ~ 1 generation
 
     static void readInput(String inputName) {
         Scanner in = null;
@@ -65,9 +65,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        upperLegend = new ArrayList<>();
-        leftLegend = new ArrayList<>();
-
         readInput("resources/25x20.txt");
 
         width = upperLegend.size();
@@ -121,7 +118,7 @@ public class Main {
 
         // Crossover to other islands
         if (Math.random() < CROSSINTERVAL && 1 < ISLANDS_NR) {
-            System.out.println("Island tranfer from " + i);
+            System.out.println("Island transfer from " + i);
             for (int j = 0; j < ISLANDS_NR; j++) {
                 if (i == j) continue;
                 Islands[j].population.add(new Individual(Islands[i].bestIndividual));
